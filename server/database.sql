@@ -36,3 +36,4 @@ CREATE TABLE orderProducts (
     FOREIGN KEY (product_id) REFERENCES ProductDetails(product_id) ON DELETE CASCADE,
     FOREIGN KEY (order_id) REFERENCES OrderDetails(order_id) ON DELETE CASCADE
 );
+
