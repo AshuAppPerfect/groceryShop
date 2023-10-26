@@ -8,6 +8,8 @@ import Product from "./scenes/product";
 import Customer from "./scenes/customer";
 import Order from "./scenes/order";
 import ProductForm from "./scenes/form/productForm"
+import ProductPage from "./scenes/form/pageProduct"
+import axios from "axios";
 // import Bar from "./scenes/bar";
 // import Form from "./scenes/form";
 // import Line from "./scenes/line";
@@ -31,7 +33,8 @@ function App() {
               <Route path="/product" element={<Product />}/>
               <Route path="/customer" element={<Customer />} />
               <Route path="/order" element={<Order />} />
-              <Route path="/mang-product" element={<ProductForm />} />
+              <Route path="/mang-product" element={<ProductPage />} />
+              {/* <Route path="/mang-product" element={<ProductForm />} /> */}
               {/* 
                />
               <Route path="/form" element={<Form />} />
