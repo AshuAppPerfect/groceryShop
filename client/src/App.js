@@ -9,6 +9,7 @@ import Customer from "./scenes/customer";
 import Order from "./scenes/order";
 import ProductForm from "./scenes/form/productForm"
 import ProductPage from "./scenes/form/pageProduct"
+import OrderPage from "./scenes/form/orderProduct";
 import axios from "axios";
 // import Bar from "./scenes/bar";
 // import Form from "./scenes/form";
@@ -34,6 +35,7 @@ function App() {
               <Route path="/customer" element={<Customer />} />
               <Route path="/order" element={<Order />} />
               <Route path="/mang-product" element={<ProductPage />} />
+              <Route path="/mang-order" element={<OrderPage />} />
               {/* <Route path="/mang-product" element={<ProductForm />} /> */}
               {/* 
                />
@@ -42,7 +44,7 @@ function App() {
               <Route path="/pie" element={<Pie />} />
               <Route path="/line" element={<Line />} />
               <Route path="/faq" element={<FAQ />} />
-              <Route path="/calendar" element={<Calendar />} />
+              
               <Route path="/geography" element={<Geography />} /> */}
             </Routes>
           </main>

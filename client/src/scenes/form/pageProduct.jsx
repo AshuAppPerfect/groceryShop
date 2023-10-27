@@ -26,8 +26,8 @@ const InventoryStatus = ["In Stock", "low stock", "Finished"];
 
 const ProductPage = () => {
   const [products, setProducts] = useState([]);
-  const [editingProduct, setEditingProduct] = useState(null);
-  const [editOpen, setEditOpen] = useState(false);
+  //const [editingProduct, setEditingProduct] = useState(null);
+  //const [editOpen, setEditOpen] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
 
   const getProducts = async () => {
@@ -44,7 +44,7 @@ const ProductPage = () => {
 
   useEffect(() => {
     getProducts();
-  }, []);
+  }, [products]);
 
   
   const [formData, setFormData] = useState({
@@ -103,12 +103,6 @@ const ProductPage = () => {
       console.log(JSON.stringify(err));
       //res.send(err);
     }
-  };
-
-  const handleEdit = (id) => {
-    
-    // Implement your PUT request here
-    console.log("Edit:", JSON.stringify(product));
   };
 
   const handleDelete = async (id) => {
@@ -241,12 +235,13 @@ const ProductPage = () => {
                 </div>
               </CardContent>
               <CardActions>
-                <Button
+                {/* <Button
                   variant="outlined"
-                  onClick={() => <EditProduct/>}
+                  onClick={() => <EditProduct product={product}/>}
                 >
                   Edit
-                </Button>
+                </Button> */}
+                <EditProduct product={product}/>
                 <Button
                   variant="outlined"
                   onClick={() => handleDelete(product.product_id)}
