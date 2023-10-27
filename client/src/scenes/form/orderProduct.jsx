@@ -35,6 +35,8 @@ const OrderPage = () => {
   const [products, setProducts] = useState([]);
   const [category, setCategory] = useState([]);
   const [laoding, setLoading] = useState(true);
+  const [cartOpen , setCartOpen] = useState(false);
+  const [cartProducts , setCartProducts]  = useState([]);
 
   const getProducts = async () => {
     try {
@@ -51,6 +53,7 @@ const OrderPage = () => {
   useEffect(() => {
     getProducts();
   }, []);
+
 
   return (
     <Box m="20px">
