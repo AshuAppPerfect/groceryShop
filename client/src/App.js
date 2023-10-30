@@ -11,6 +11,9 @@ import ProductForm from "./scenes/form/productForm"
 import ProductPage from "./scenes/form/pageProduct"
 import OrderPage from "./scenes/form/orderProduct";
 import axios from "axios";
+import Chart from "./scenes/charts/Chart";
+import Bar from "./scenes/charts/Bar";
+import Line from "./scenes/charts/Line";
 // import Bar from "./scenes/bar";
 // import Form from "./scenes/form";
 // import Line from "./scenes/line";
@@ -36,6 +39,10 @@ function App() {
               <Route path="/order" element={<Order />} />
               <Route path="/mang-product" element={<ProductPage />} />
               <Route path="/mang-order" element={<OrderPage />} />
+              <Route path="/chart" element={<Chart />} >
+                 <Route path="/chart/bar" element = {<Bar />}/>
+                <Route path="/chart/line" element = {<Line />}/>
+              </Route>
               {/* <Route path="/mang-product" element={<ProductForm />} /> */}
               {/* 
                />

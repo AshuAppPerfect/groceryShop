@@ -1,19 +1,19 @@
 import DisplayCard from "./Card";
 import React, { useState } from "react";
 
-const Cards = (props) => {
-  console.log(props.category);
-  console.log(props.products);
+const Cards = ({products, category, handleAddToCart}) => {
+  //console.log(props.category);
+  //console.log(props.products);
 
-  let category = props.category;
+  //let category = props.category;
 
-  const [addedProduct, setAddedProduct] = useState([]);
+  //const [addedProduct, setAddedProduct] = useState([]);
 
   function getProducts() {
     if (category === "All") {
-      return props.products;
+      return products;
     } else {
-      let filteredProducts = props.products.filter(
+      let filteredProducts = products.filter(
         (product) => product.type === category
       );
       return filteredProducts;
@@ -21,14 +21,19 @@ const Cards = (props) => {
   }
 
   return (
-    <div>
+    <div style={{
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+          }}>
       {getProducts().map((product) => {
         return (
           <DisplayCard
             product={product}
-            key={props.products.product_id}
-            addedProduct={addedProduct}
-            setAddedProduct={setAddedProduct}
+            key={product.product_id}
+            handleAddToCart={handleAddToCart}
+            //addedProduct={addedProduct}
+            //setAddedProduct={setAddedProduct}
           />
         );
       })}
