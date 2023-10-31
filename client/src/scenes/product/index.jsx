@@ -1,109 +1,233 @@
-import { Box, Typography, useTheme } from "@mui/material";
-import { DataGrid ,GridToolbar} from "@mui/x-data-grid";
-import { tokens } from "../../theme";
-import { mockProductData } from "../../data/mockData";
+import React, { useEffect, useMemo, useState, useContext } from "react";
+
+import { MaterialReactTable } from "material-react-table";
+
+import { Box, Button, Fab, IconButton, Tooltip } from "@mui/material";
+
+import { Delete, Edit } from "@mui/icons-material";
 import Header from "../../components/Header";
 
+import AddProductModal from "./AddProduct";
 
-const Product = () => {
-    const theme = useTheme();
-    const colors = tokens(theme.palette.mode);
-    const columns = [
-    { field: "id", headerName: "ID" },
+function Product() {
+  const statusList = ["In Stock", "low Stock", "Finished"];
+  const typeList = [
+    "All",
+    "Fruit",
+    "Dairy",
+    "Bakery",
+    "Vegetable",
+    "Meat",
+    "Grains",
+    "Seafood",
+    "Breakfast",
+    "Condiments",
+    "Beverages",
+    "Sweets",
+    "Snacks",
+    "Personal Care",
+    "Household",
+  ];
+  const [validationErrors, setValidationErrors] = useState({});
+
+  const productCols = [
     {
-      field: "name",
-      headerName: "Name",
-      flex: 1,
-      
-      cellClassName: "name-column--cell",
+      accessorKey: "product_id",
+      header: "Product ID",
+      size: 60,
+      enableEditing: false,
     },
     {
-      field: "type",
-      headerName: "Type",
-      flex: 1,
+      accessorKey: "product_name",
+      header: "Product Name",
+      size: 140,
+      muiEditTextFieldProps: {
+        required: true,
+      },
     },
     {
-      field: "costPrice",
-      headerName: "Cost",
-      flex: 1,
+      accessorKey: "costprice",
+      header: "Cost Price",
+      type: "number",
+      muiEditTextFieldProps: {
+        required: true,
+      },
     },
     {
-      field: "sellingPrice",
-      headerName: "Selling Price",
-      flex: 1,
+      accessorKey: "sellingprice",
+      header: "Selling Price",
+      type: "number",
+
+      muiEditTextFieldProps: {
+        required: true,
+      },
     },
     {
-      field: "inventoryStatus",
-      headerName: "Inventory Status",
-      flex: 1,
-      renderCell: ({ row: { inventoryStatus } }) => {
-        return (
-          <Box
-            width="60%"
-            m="0 auto"
-            p="5px"
-            display="flex"
-            justifyContent="center"
-            backgroundColor={
-              inventoryStatus === "In Stock"
-                ? colors.greenAccent[600]
-                : inventoryStatus === "Low Stock"
-                ? colors.redAccent[500]
-                : colors.greenAccent[700]
-            }
-            borderRadius="4px"
-          >
-            <Typography color={colors.grey[100]} sx={{ ml: "5px" }}>
-              {inventoryStatus}
-            </Typography>
-          </Box>
-        );
+      accessorKey: "description",
+      header: "Description",
+      size: 140,
+      enableResizing: true,
+      muiEditTextFieldProps: {
+        required: true,
+      },
+    },
+    {
+      accessorKey: "availablequantity",
+      header: "Available Quantity",
+      type: "number",
+      muiEditTextFieldProps: {
+        required: true,
+      },
+    },
+    {
+      accessorKey: "inventorystatus",
+      header: "Inventory Status",
+      size: 140,
+      editSelectOptions: statusList,
+      muiEditTextFieldProps: {
+        select: true,
+        required: true,
+      },
+    },
+    {
+      accessorKey: "type",
+      header: "Type",
+      size: 140,
+      editSelectOptions: typeList,
+      muiEditTextFieldProps: {
+        select: true,
+        required: true,
       },
     },
   ];
 
-    return (
-        <Box m="20px">
-            <Box display="flex" justifyContent="space-between" alignItems="center">
+  const [productsData, setProductsData] = useState([]);
 
-             <Header title="Products" subtitle="Manage your inventory" />
+  const getProducts = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/addproducts");
 
-            </Box>
-            
-            <Box  m="40px 0 0 0" height="75vh"
-            sx={{
-                "& .MuiDataGrid-root": {
-                border: "none",
-                },
-                "& .MuiDataGrid-cell": {
-                borderBottom: "none",
-                },
-                "& .name-column--cell": {
-                color: colors.greenAccent[300],
-                },
-                "& .MuiDataGrid-columnHeaders": {
-                backgroundColor: colors.blueAccent[700],
-                borderBottom: "none",
-                },
-                "& .MuiDataGrid-virtualScroller": {
-                backgroundColor: colors.primary[400],
-                },
-                "& .MuiDataGrid-footerContainer": {
-                borderTop: "none",
-                backgroundColor: colors.blueAccent[700],
+      const jsonData = await response.json();
+      console.log(jsonData);
+      setProductsData(jsonData);
+    } catch (err) {
+      console.log(JSON.stringify(err));
+    }
+  };
+
+  const [addProductModalStatus, setAddProductModalStatus] = useState(false);
+
+  const handleSaveRowEdits = async ({ exitEditingMode, values }) => {
+    values.product_id = parseInt(values.product_id);
+    values.costprice = parseInt(values.costprice);
+    values.sellingprice = parseInt(values.sellingprice);
+    values.availablequantity = parseInt(values.availablequantity);
+    console.log(values);
+    const id = values.product_id;
+
+    try {
+      const response = await fetch("http://localhost:5000/editproducts", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+      console.log(response);
+      getProducts();
+    } catch (err) {
+      console.log(JSON.stringify(err));
+    }
+
+    exitEditingMode();
+  };
+
+  const handleDeleteRow = async (row) => {
+    if (
+      window.confirm(
+        `Are you sure you want to delete Product ${row.getValue(
+          "product_name"
+        )}`
+      )
+    ) {
+      console.log(row.original);
+      const id = row.getValue("product_id");
+      try {
+        const deleteProduct = await fetch(
+          `http://localhost:5000/addproducts/${id}`,
+          { method: "DELETE" }
+        );
+        if (deleteProduct.status === 200) {
+          console.log("Product deleted");
+        } else {
+          console.log("Error deleting product");
+        }
+        getProducts();
+      } catch (err) {
+        console.log(JSON.stringify(err));
+      }
+    }
+  };
+
+  useEffect(() => {
+    getProducts();
+  }, []);
+  return (
+    <Box m="20px">
+      <Box display="flex" justifyContent="space-between" alignItems="center">
+        <Header title="Products" subtitle="Manage your inventory" />
+      </Box>
+      <Box>
+        <MaterialReactTable
+          displayColumnDefOptions={{
+            "mrt-row-actions": {
+              muiTableHeadCellProps: {
+                align: "center",
               },
-                "& .MuiCheckbox-root": {
-                color: `${colors.greenAccent[200]} !important`,
-                },
-            }}>
-                <DataGrid
-                    rows = {mockProductData}
-                    columns={columns}
-                    components={{ Toolbar: GridToolbar }}
-                />
+              size: 120,
+            },
+          }}
+          columns={productCols}
+          data={productsData}
+          editingMode="modal"
+          enableColumnOrdering
+          enableEditing
+          state={{ columnVisibility: { product_id: false } }}
+          onEditingRowSave={handleSaveRowEdits}
+          renderRowActions={({ row, table }) => (
+            <Box sx={{ display: "flex", gap: "1rem" }}>
+              <Tooltip arrow placement="left" title="Edit">
+                <IconButton
+                  onClick={() => {
+                    table.setEditingRow(row);
+                  }}
+                >
+                  <Edit />
+                </IconButton>
+              </Tooltip>
+              <Tooltip arrow placement="right" title="Delete">
+                <IconButton color="error" onClick={() => handleDeleteRow(row)}>
+                  <Delete />
+                </IconButton>
+              </Tooltip>
             </Box>
-        </Box>
-    )
-
+          )}
+          renderTopToolbarCustomActions={() => (
+            <Button
+              color="secondary"
+              onClick={() => setAddProductModalStatus(true)}
+              variant="contained"
+            >
+              Add Product
+            </Button>
+          )}
+        />
+        <AddProductModal
+        columns = {productCols}
+        state = {{columnVisibility: {product_id : false}}}
+        open={addProductModalStatus}
+        onClose={()=>setAddProductModalStatus(false)}
+        />
+      </Box>
+    </Box>
+  );
 }
 export default Product;

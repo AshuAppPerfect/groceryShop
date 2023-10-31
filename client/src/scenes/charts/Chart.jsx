@@ -3,7 +3,7 @@ import { DataGrid ,GridToolbar} from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 import { mockProductData } from "../../data/mockData";
 import Header from "../../components/Header";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route,Outlet } from "react-router-dom";
 
 
 
@@ -18,9 +18,7 @@ const Chart = () => {
                 <Header title="Charts" subtitle="View your charts" />
 
             </Box>
-            <Routes>
-               
-            </Routes>
+            <Outlet />
         </Box>
     )
 }

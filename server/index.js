@@ -63,7 +63,41 @@ app.get("/addproducts/:id", async (req, res) => {
   }
 });
 
-//edit a product
+app.put("/editproducts", async(req,res) => {
+  try{
+    const id = req.body["product_id"];
+    const productname = req.body["product_name"];
+    const costprice = req.body["costprice"];
+    const sellingprice = req.body["sellingprice"];
+    const description = req.body["description"];
+    const availablequantity = req.body["availablequantity"];
+    const inventorystatus = req.body["inventorystatus"];
+    const type = req.body["type"];
+
+    const updateProduct = await pool.query(
+      "UPDATE productdetails SET product_name = $1, costprice = $2, sellingprice = $3, description = $4, availablequantity = $5, inventorystatus = $6, type = $7 WHERE product_id=$8 ;",
+      [
+        productname,
+        costprice,
+        sellingprice,
+        description,
+        availablequantity,
+        inventorystatus,
+        type,
+        id,
+      ]  
+    );
+
+     res.json(`product '${id}' is updated`);
+
+  }
+  catch(err){
+      console.log(JSON.stringify(err));
+    res.send(err);
+  }
+});
+
+//edit a product FORM
 
 app.put("/addproducts/:id", async (req, res) => {
   try {
@@ -153,6 +187,46 @@ app.post("/addorders", async (req, res) => {
     res.send(err);
   }
 });
+
+//amount payment method query
+app.get("/paymentquery", async (req,res) =>{
+  try{
+    const linequery = await pool.query("SELECT SUM(totalamount), paymentmethod FROM orderdetails GROUP BY paymentmethod ; ");
+    res.json(linequery.rows);
+  }
+  catch (err){
+    console.log(err);
+    res.send(err);
+  }
+})
+
+// product order query
+app.get("/orderquery" , async(req, res) => {
+  try {
+    const selectquery =
+      "SELECT pd.product_name, COUNT(op.order_id) AS times_ordered FROM ProductDetails pd LEFT JOIN orderProducts op ON pd.product_id = op.product_id GROUP BY pd.product_name HAVING COUNT(op.order_id) >= 1 ORDER BY times_ordered DESC;";
+    const productquery = await pool.query(selectquery);
+    res.json(productquery.rows);
+  } catch (err) {
+    console.log(err);
+    res.send(err);
+  }
+})
+
+//order date query
+
+app.get("/datequery", async (req, res) => {
+  try {
+    const datequery = await pool.query(
+      "SELECT orderdate, SUM(totalamount) as total_sales FROM orderdetails GROUP BY orderdate ORDER BY orderdate;"
+    );
+    res.json(datequery.rows);
+  } catch (err) {
+    console.log(err);
+    res.send(err);
+  }
+});
+
 
 app.listen(5000, () => {
   console.log("server is started at port 5000");

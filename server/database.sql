@@ -26,6 +26,7 @@ CREATE TABLE OrderDetails (
     orderStatus ORDERSTATUSCUSTOM DEFAULT ('Pending'),
     orderDate DATE NOT NULL,
     paymentMethod PAYMENTMETHODCUSTOM NOT NULL,
+    total_amount INT,
     CONSTRAINT fk_order FOREIGN KEY (user_id) REFERENCES UserDetails(user_id)
 );
 CREATE TABLE orderProducts (
