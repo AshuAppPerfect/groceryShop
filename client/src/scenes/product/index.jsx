@@ -7,7 +7,19 @@ import { Box, Button, Fab, IconButton, Tooltip } from "@mui/material";
 import { Delete, Edit } from "@mui/icons-material";
 import Header from "../../components/Header";
 
-import AddProductModal from "./AddProduct";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
+
+import {
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+} from '@mui/material';
+import {
+  MRT_EditActionButtons,
+  // createRow,
+  useMaterialReactTable,
+} from 'material-react-table';
 
 function Product() {
   const statusList = ["In Stock", "low Stock", "Finished"];
@@ -40,6 +52,7 @@ function Product() {
     {
       accessorKey: "product_name",
       header: "Product Name",
+      type: "text",
       size: 140,
       muiEditTextFieldProps: {
         required: true,
@@ -67,6 +80,7 @@ function Product() {
       header: "Description",
       size: 140,
       enableResizing: true,
+      type: "text",
       muiEditTextFieldProps: {
         required: true,
       },
@@ -82,6 +96,8 @@ function Product() {
     {
       accessorKey: "inventorystatus",
       header: "Inventory Status",
+      // type: "select",
+      editVariant: "select",
       size: 140,
       editSelectOptions: statusList,
       muiEditTextFieldProps: {
@@ -92,6 +108,7 @@ function Product() {
     {
       accessorKey: "type",
       header: "Type",
+      //type: "select",
       size: 140,
       editSelectOptions: typeList,
       muiEditTextFieldProps: {
@@ -102,6 +119,19 @@ function Product() {
   ];
 
   const [productsData, setProductsData] = useState([]);
+  const [productAdded, setProductAdded] = useState(false);
+
+  const handleClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setProductAdded(false);
+  };
+
+  const onClose = () => {
+    setAddProductModalStatus(false);
+  };
 
   const getProducts = async () => {
     try {
@@ -140,6 +170,28 @@ function Product() {
     exitEditingMode();
   };
 
+  const handleSaveRowCreate = async ({ values, table }) => {
+    values.costprice = parseInt(values.costprice);
+    values.sellingprice = parseInt(values.sellingprice);
+    values.availablequantity = parseInt(values.availablequantity);
+    console.log(values);
+    const id = values.product_id;
+    try {
+      const response = await fetch("http://localhost:5000/addproductsmodal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+
+      setProductAdded(true);
+
+      getProducts();
+    } catch (err) {
+      console.log(err);
+    }
+    table.setCreatingRow(null);
+  };
+
   const handleDeleteRow = async (row) => {
     if (
       window.confirm(
@@ -175,6 +227,21 @@ function Product() {
       <Box display="flex" justifyContent="space-between" alignItems="center">
         <Header title="Products" subtitle="Manage your inventory" />
       </Box>
+      <div>
+        <Snackbar
+          open={productAdded}
+          autoHideDuration={3000}
+          onClose={handleClose}
+        >
+          <Alert
+            onClose={handleClose}
+            severity="success"
+            sx={{ width: "100%" }}
+          >
+            Product Added Successfully !!
+          </Alert>
+        </Snackbar>
+      </div>
       <Box>
         <MaterialReactTable
           displayColumnDefOptions={{
@@ -187,11 +254,49 @@ function Product() {
           }}
           columns={productCols}
           data={productsData}
+          createDisplayMode="modal"
           editingMode="modal"
           enableColumnOrdering
           enableEditing
           state={{ columnVisibility: { product_id: false } }}
           onEditingRowSave={handleSaveRowEdits}
+          onCreatingRowSave={handleSaveRowCreate}
+          renderCreateRowDialogContent={({
+            table,
+            row,
+            internalEditComponents,
+          }) => (
+            <>
+              <DialogTitle variant="h3">Add New Product</DialogTitle>
+              <DialogContent
+                sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+              >
+                {internalEditComponents}{" "}
+                {/* or render custom edit components here */}
+              </DialogContent>
+              <DialogActions>
+                <MRT_EditActionButtons variant="text" table={table} row={row} />
+              </DialogActions>
+            </>
+          )}
+          renderEditRowDialogContent={({
+            table,
+            row,
+            internalEditComponents,
+          }) => (
+            <>
+              <DialogTitle variant="h3">Edit Product</DialogTitle>
+              <DialogContent
+                sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
+              >
+                {internalEditComponents}{" "}
+                {/* or render custom edit components here */}
+              </DialogContent>
+              <DialogActions>
+                <MRT_EditActionButtons variant="text" table={table} row={row} />
+              </DialogActions>
+            </>
+          )}
           renderRowActions={({ row, table }) => (
             <Box sx={{ display: "flex", gap: "1rem" }}>
               <Tooltip arrow placement="left" title="Edit">
@@ -210,22 +315,20 @@ function Product() {
               </Tooltip>
             </Box>
           )}
-          renderTopToolbarCustomActions={() => (
+          renderTopToolbarCustomActions={({ table }) => (
             <Button
               color="secondary"
-              onClick={() => setAddProductModalStatus(true)}
+              //onClick={() => setAddProductModalStatus(true)}
+              onClick={() => {
+                table.setCreatingRow(true);
+              }}
               variant="contained"
             >
               Add Product
             </Button>
           )}
         />
-        <AddProductModal
-        columns = {productCols}
-        state = {{columnVisibility: {product_id : false}}}
-        open={addProductModalStatus}
-        onClose={()=>setAddProductModalStatus(false)}
-        />
+
       </Box>
     </Box>
   );

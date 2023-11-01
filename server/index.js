@@ -9,7 +9,7 @@ app.use(express.json());
 
 //ROUTES
 
-//create a product
+//create a product BY FORM
 
 app.post("/addproducts", async (req, res) => {
   try {
@@ -35,11 +35,37 @@ app.post("/addproducts", async (req, res) => {
   }
 });
 
-//get all products
+//ADD PRODUCT MODAL
+app.post("/addproductsmodal", async (req, res) => {
+  try {
+    console.log(req.body);
+    const productname = req.body.product_name;
+    const costprice = req.body.costprice * 1;
+    const sellingprice = req.body.sellingprice * 1;
+    const description = req.body.description;
+    const availablequantity = req.body.availablequantity * 1;
+    const inventorystatus = req.body.inventorystatus.toString();
+    const type = req.body.type;
 
+    const insertProduct = `INSERT INTO productdetails (product_name, costprice, sellingprice, description, availablequantity, inventorystatus,type) VALUES ('${productname}','${costprice}' ,'${sellingprice}' ,'${description}' , '${availablequantity}', '${inventorystatus}' , '${type}');`;
+
+    console.log("insertProduct", insertProduct);
+    const newProduct = await pool.query(insertProduct);
+    console.log(newProduct);
+    res.json(newProduct);
+  } catch (err) {
+    console.log(err);
+    res.send(err);
+  }
+});
+
+
+//get all products
 app.get("/addproducts", async (req, res) => {
   try {
-    const allProducts = await pool.query("SELECT * FROM productdetails");
+    const allProducts = await pool.query(
+      "SELECT * FROM productdetails ORDER BY product_id"
+    );
     res.json(allProducts.rows);
   } catch (err) {
     console.log(JSON.stringify(err));
@@ -47,8 +73,24 @@ app.get("/addproducts", async (req, res) => {
   }
 });
 
-//get a specific product
 
+//Get all orders with products
+app.get("/getorderproducts", async(req, res) => {
+  try{
+    const orderQuery = "SELECT od.order_id, od.user_id, od.orderstatus, od.orderdate, od.paymentmethod, od.totalamount, op.product_id, op.quantity FROM orderdetails od JOIN orderproducts op ON od.order_id = op.order_id ORDER BY od.order_id, op.product_id;";
+
+    const orderProducts = await pool.query(orderQuery);
+
+    res.json(orderProducts.rows);
+
+  }
+  catch(err){
+    console.log(JSON.stringify(err));
+    res.send(err);
+  }
+})
+
+//get a specific product
 app.get("/addproducts/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -63,8 +105,9 @@ app.get("/addproducts/:id", async (req, res) => {
   }
 });
 
-app.put("/editproducts", async(req,res) => {
-  try{
+//edit a specfifc product modal
+app.put("/editproducts", async (req, res) => {
+  try {
     const id = req.body["product_id"];
     const productname = req.body["product_name"];
     const costprice = req.body["costprice"];
@@ -85,20 +128,37 @@ app.put("/editproducts", async(req,res) => {
         inventorystatus,
         type,
         id,
-      ]  
+      ]
     );
 
-     res.json(`product '${id}' is updated`);
-
-  }
-  catch(err){
-      console.log(JSON.stringify(err));
+    res.json(`product '${id}' is updated`);
+  } catch (err) {
+    console.log(JSON.stringify(err));
     res.send(err);
   }
 });
 
-//edit a product FORM
 
+//update order modal
+app.put("/editorder", async(req, res) => {
+
+  console.log(req.body);
+  try {
+    const id = req.body["order_id"];
+    const paymentMethod = req.body["paymentmethod"];
+    const orderstatus = req.body["orderstatus"];
+
+    const updateOrder = await pool.query("UPDATE orderdetails SET paymentmethod = $1, orderstatus = $2 WHERE order_id=$3 ;", [ paymentMethod, orderstatus,id]);
+
+    res.json( `order '${id}' updated`);
+
+  } catch (err) {
+    console.log(JSON.stringify(err));
+    res.send(err);
+  }
+})
+
+//edit a product FORM
 app.put("/addproducts/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -132,7 +192,6 @@ app.put("/addproducts/:id", async (req, res) => {
 });
 
 //delete a product
-
 app.delete("/addproducts/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -148,6 +207,25 @@ app.delete("/addproducts/:id", async (req, res) => {
   }
 });
 
+
+//delete a order
+app.delete("/deleteorder/:id", async(req,res) => {
+  try{
+    const {id} = req.params;
+    const deleteOrderProducts =  await pool.query("DELETE FROM orderproducts WHERE order_id = $1;",[id]);
+
+    const deleteOrder = await pool.query(
+      "DELETE FROM orderdetails WHERE order_id = $1;",[id]
+    );
+
+    res.json("order deleted");
+  }catch(err){
+    console.log(JSON.stringify(err));
+    res.send(err);
+  }
+});
+
+// CREATE ORDER BY FORM
 app.post("/addorders", async (req, res) => {
   try {
     console.log(req.body);
@@ -166,7 +244,7 @@ app.post("/addorders", async (req, res) => {
     const newOrder = await pool.query(insertOrder);
     console.log(newOrder);
 
-    const selectOrder = `SELECT order_id from orderdetails ORDER BY order_id DESC LIMIT 1;`
+    const selectOrder = `SELECT order_id from orderdetails ORDER BY order_id DESC LIMIT 1;`;
 
     const selectOrd = await pool.query(selectOrder);
 
@@ -181,27 +259,29 @@ app.post("/addorders", async (req, res) => {
       await pool.query(productQuery);
     }
     res.json(newOrder);
-
   } catch (err) {
     console.log(err);
     res.send(err);
   }
 });
 
+
+
 //amount payment method query
-app.get("/paymentquery", async (req,res) =>{
-  try{
-    const linequery = await pool.query("SELECT SUM(totalamount), paymentmethod FROM orderdetails GROUP BY paymentmethod ; ");
+app.get("/paymentquery", async (req, res) => {
+  try {
+    const linequery = await pool.query(
+      "SELECT SUM(totalamount), paymentmethod FROM orderdetails GROUP BY paymentmethod ; "
+    );
     res.json(linequery.rows);
-  }
-  catch (err){
+  } catch (err) {
     console.log(err);
     res.send(err);
   }
-})
+});
 
 // product order query
-app.get("/orderquery" , async(req, res) => {
+app.get("/orderquery", async (req, res) => {
   try {
     const selectquery =
       "SELECT pd.product_name, COUNT(op.order_id) AS times_ordered FROM ProductDetails pd LEFT JOIN orderProducts op ON pd.product_id = op.product_id GROUP BY pd.product_name HAVING COUNT(op.order_id) >= 1 ORDER BY times_ordered DESC;";
@@ -211,10 +291,9 @@ app.get("/orderquery" , async(req, res) => {
     console.log(err);
     res.send(err);
   }
-})
+});
 
 //order date query
-
 app.get("/datequery", async (req, res) => {
   try {
     const datequery = await pool.query(
@@ -226,7 +305,6 @@ app.get("/datequery", async (req, res) => {
     res.send(err);
   }
 });
-
 
 app.listen(5000, () => {
   console.log("server is started at port 5000");

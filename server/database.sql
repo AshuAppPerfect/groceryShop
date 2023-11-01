@@ -37,4 +37,15 @@ CREATE TABLE orderProducts (
     FOREIGN KEY (product_id) REFERENCES ProductDetails(product_id) ON DELETE CASCADE,
     FOREIGN KEY (order_id) REFERENCES OrderDetails(order_id) ON DELETE CASCADE
 );
-
+SELECT od.order_id,
+    od.user_id,
+    od.orderstatus,
+    od.orderdate,
+    od.paymentmethod,
+    od.totalamount,
+    op.product_id,
+    op.quantity
+FROM orderdetails od
+    JOIN orderproducts op ON od.order_id = op.order_id
+ORDER BY od.order_id,
+    op.product_id;
