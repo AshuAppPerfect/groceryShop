@@ -42,7 +42,7 @@ const Pie = () => {
 
   return (
     <Box>
-      <Box> <h4>Pie chart: </h4></Box>
+      <Box> <h4>Payment Method Analysis: </h4></Box>
       <Box>
         <PlotComponent data={data} layout={layout} />
         <button

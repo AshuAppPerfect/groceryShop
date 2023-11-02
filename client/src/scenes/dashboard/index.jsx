@@ -11,6 +11,12 @@ const Dashboard = () => {
         <Header title="DASHBOARD" subtitle="Welcome to your dashboard" />
       </Box>
       <Box>
+        {/* <div>
+          <div>Order count: </div>
+          <div>Order Delivered: </div>
+          <div>Total Profit: </div>
+          <div>Customer count: </div>
+        </div> */}
         <div
           style={{
             display: "flex",

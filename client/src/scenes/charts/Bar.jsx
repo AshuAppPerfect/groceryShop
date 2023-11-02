@@ -33,7 +33,7 @@ const Bar = () => {
 
   return (
     <Box>
-      <Box> <h4>Bar chart: </h4></Box>
+      <Box> <h4>Product Sales Analysis</h4></Box>
       <Box>
         <PlotComponent data={data} />
         <button

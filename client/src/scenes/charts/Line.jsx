@@ -26,28 +26,51 @@ const Line = () => {
   var trace1 = {
     x: queryData.map((item) => item.month),
     y: queryData.map((item) => item.total_sales),
-    type:'scatter'
+    type:'scatter',
+    name:'Total sales',
+    line: {
+    width: 3
+  }
   }
 
   var trace2 = {
     x: queryData.map((item) => item.month),
     y: queryData.map((item) => item.total_selling_price),
-     type:'scatter'
+     type:'scatter',
+     name:'Selling Price',
+    line: {
+      dash: 'dashdot',
+    width: 1
+  }
   }
 
    var trace3 = {
     x: queryData.map((item) => item.month),
     y: queryData.map((item) => item.total_cost),
-     type:'scatter'
+     type:'scatter',
+     name:'Cost Price',
+    line: {
+      dash: 'dashdot',
+    width: 1
+  }
+  }
+  var trace4 = {
+    x: queryData.map((item) => item.month),
+    y: queryData.map((item) => item.total_profit),
+     type:'scatter',
+     name:'Profit',
+    line: {
+    width: 3
+  }
   }
 
   const data = [
-    trace1, trace2, trace3
+    trace1, trace2, trace3,trace4
   ];
 
   return (
     <Box>
-      <Box> <h4>Line chart: </h4></Box>
+      <Box> <h4>Sales Profit Analysis:</h4></Box>
       <Box>
         <PlotComponent data={data} />
         <button
