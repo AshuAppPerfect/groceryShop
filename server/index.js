@@ -297,7 +297,8 @@ app.get("/orderquery", async (req, res) => {
 app.get("/datequery", async (req, res) => {
   try {
     const datequery = await pool.query(
-      "SELECT orderdate, SUM(totalamount) as total_sales FROM orderdetails GROUP BY orderdate ORDER BY orderdate;"
+      // "SELECT orderdate, SUM(totalamount) as total_sales FROM orderdetails GROUP BY orderdate ORDER BY orderdate;"
+      "SELECT TO_CHAR(od.orderDate, 'YYYY-MM')AS month,  Sum(od.totalamount)  AS total_sales, Sum(pd.costprice * op.quantity)   AS total_cost,   Sum(pd.sellingprice * op.quantity)   AS total_selling_price,     Sum(( pd.sellingprice - pd.costprice ) * op.quantity) AS total_profit FROM   orderdetails od JOIN orderproducts op ON od.order_id = op.order_id JOIN productdetails pd ON op.product_id = pd.product_id GROUP  BY month ORDER  BY month; "
     );
     res.json(datequery.rows);
   } catch (err) {

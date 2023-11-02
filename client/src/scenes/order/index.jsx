@@ -18,6 +18,9 @@ import React, { useEffect, useMemo, useState, useContext } from "react";
 
 import ProductModal from "./productModal";
 import AddOrderModal from "./addOrderModal";
+import CreateOrderModal from "./createOrderModal";
+import { mkConfig, generateCsv, download } from "export-to-csv";
+import FileDownloadIcon from "@mui/icons-material/FileDownload";
 
 const Order = () => {
   const paymentMethodList = ["Cash", "UPI", "Debit Card", "Credit Card"];
@@ -38,6 +41,13 @@ const Order = () => {
 
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [products, setProducts] = useState([]);
+  const [openCreateModal, setOpenCreateModal] = useState(false);
+
+  const handleCloseCreateModal = () => {
+    setOpenCreateModal(false);
+  };
 
   const getOrderProducts = async () => {
     setLoading(true);
@@ -176,9 +186,40 @@ const Order = () => {
     exitEditingMode();
   };
 
-const handleCreateOrder = async () =>{
+  const handleCreateOrder = async () => {
     setIsCreatingOrder(true);
-}
+  };
+
+  const getProducts = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/addproducts");
+
+      const jsonData = await response.json();
+      //console.log(jsonData);
+      setProducts(jsonData);
+    } catch (err) {
+      console.log(JSON.stringify(err));
+    }
+  };
+
+  useEffect(() => {
+    getProducts();
+  }, []);
+
+  const csvConfig = mkConfig({
+    fieldSeparator: ",",
+    decimalSeparator: ".",
+    useKeysAsHeaders: true,
+  });
+  const handleExportRows = (rows) => {
+    const rowData = rows.map((row) => row.original);
+    const csv = generateCsv(csvConfig)(rowData);
+    download(csvConfig)(csv);
+  };
+  const handleExportData = () => {
+    const csv = generateCsv(csvConfig)(orders);
+    download(csvConfig)(csv);
+  };
 
   return (
     <Box m="20px">
@@ -283,20 +324,67 @@ const handleCreateOrder = async () =>{
                 </Box>
               )}
               renderTopToolbarCustomActions={({ table }) => (
-                <AddOrderModal/>
-                // <Button
-                //   color="secondary"
-                //   onClick={() => handleCreateOrder}
-                // //   onClick={() => {
-                // //     table.setCreatingRow(true);
-                // //   }}
-                //   variant="contained"
-                // >
-                //   Add Order
-                // </Button>
+                //<AddOrderModal/>
+                <Box>
+                  <Box>
+                    <Button
+                      color="secondary"
+                      onClick={() => setOpenCreateModal(true)}
+                      //onClick={() => handleCreateOrder}
+                      //   onClick={() => {
+                      //     table.setCreatingRow(true);
+                      //   }}
+                      variant="contained"
+                    >
+                      Add Order
+                    </Button>
+                  </Box>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      gap: "16px",
+                      padding: "8px",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <Button
+                      //export all data that is currently in the table (ignore pagination, sorting, filtering, etc.)
+                      onClick={handleExportData}
+                      startIcon={<FileDownloadIcon />}
+                    >
+                      Export All Data
+                    </Button>
+                    <Button
+                      disabled={
+                        table.getPrePaginationRowModel().rows.length === 0
+                      }
+                      //export all rows, including from the next page, (still respects filtering and sorting)
+                      onClick={() =>
+                        handleExportRows(table.getPrePaginationRowModel().rows)
+                      }
+                      startIcon={<FileDownloadIcon />}
+                    >
+                      Export All Rows
+                    </Button>
+                    <Button
+                      disabled={table.getRowModel().rows.length === 0}
+                      //export all rows as seen on the screen (respects pagination, sorting, filtering, etc.)
+                      onClick={() => handleExportRows(table.getRowModel().rows)}
+                      startIcon={<FileDownloadIcon />}
+                    >
+                      Export Page Rows
+                    </Button>
+                  </Box>
+                </Box>
               )}
             />
           </Box>
+          <CreateOrderModal
+            open={openCreateModal}
+            onClose={handleCloseCreateModal}
+            products={products}
+            getOrderProducts={getOrderProducts}
+          />
         </div>
       )}
     </Box>

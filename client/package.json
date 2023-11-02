@@ -23,6 +23,7 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.5.1",
+    "export-to-csv": "^1.2.1",
     "formik": "^2.4.5",
     "material-react-table": "^2.0.0",
     "plotly.js-dist-min": "^2.27.0",

@@ -24,13 +24,25 @@ const Line = () => {
   }, [refresh]);
 
   var trace1 = {
-    x: queryData.map((item) => item.orderdate),
+    x: queryData.map((item) => item.month),
     y: queryData.map((item) => item.total_sales),
     type:'scatter'
   }
 
+  var trace2 = {
+    x: queryData.map((item) => item.month),
+    y: queryData.map((item) => item.total_selling_price),
+     type:'scatter'
+  }
+
+   var trace3 = {
+    x: queryData.map((item) => item.month),
+    y: queryData.map((item) => item.total_cost),
+     type:'scatter'
+  }
+
   const data = [
-    trace1
+    trace1, trace2, trace3
   ];
 
   return (
